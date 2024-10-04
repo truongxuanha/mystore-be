@@ -1,0 +1,7 @@
+POST  http://localhost:3000/v1/manufacturer/create
+
+{
+    "name": "Dell",
+    "img": "",
+    "slug": ""
+}
