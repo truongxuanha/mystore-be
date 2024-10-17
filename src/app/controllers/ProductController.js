@@ -116,18 +116,19 @@ class ProductController {
   }
 
   //[POST] / product / create
+  // [POST] / product / create
   create(req, res) {
     const formData = req.body;
     formData.slug = createSlug(formData.name);
 
-    // Kiểm tra xem có file nào không
+    // Check if any file is uploaded
     if (!req.file) {
       return res
         .status(400)
         .json({ status: false, message: "No file uploaded." });
     }
 
-    // Upload hình ảnh lên Firebase
+    // Firebase upload logic
     const blob = bucket.file(req.file.originalname);
     const blobStream = blob.createWriteStream({
       metadata: {
@@ -140,13 +141,13 @@ class ProductController {
     });
 
     blobStream.on("finish", () => {
-      // Tạo URL truy cập tới file
+      // Public URL for accessing the file
       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
-      // Lưu URL vào formData
+      // Save the URL to the product data
       formData.thumbnail = publicUrl;
 
-      // Lưu sản phẩm vào cơ sở dữ liệu
+      // Save the product to the database
       Products.create(formData, function (data) {
         res.json(data);
       });
@@ -162,9 +163,40 @@ class ProductController {
 
     formData.slug = createSlug(formData.name);
 
-    Products.update(id, formData, function (data) {
-      res.json(data);
-    });
+    // Check if a new file is uploaded
+    if (req.file) {
+      // Firebase upload logic for the new file
+      const blob = bucket.file(req.file.originalname);
+      const blobStream = blob.createWriteStream({
+        metadata: {
+          contentType: req.file.mimetype,
+        },
+      });
+
+      blobStream.on("error", (err) => {
+        return res.status(500).json({ status: false, data: err });
+      });
+
+      blobStream.on("finish", () => {
+        // Public URL for the new image
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
+        // Update thumbnail with new image URL
+        formData.thumbnail = publicUrl;
+
+        // Update product in the database
+        Products.update(id, formData, function (data) {
+          res.json(data);
+        });
+      });
+
+      blobStream.end(req.file.buffer);
+    } else {
+      // If no file is uploaded, update other fields without modifying the thumbnail
+      Products.update(id, formData, function (data) {
+        res.json(data);
+      });
+    }
   }
 
   //[DELETE] / product / :id / remove

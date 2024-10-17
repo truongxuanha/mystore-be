@@ -17,7 +17,7 @@ router.get("/hot_product", productController.getHotroduct);
 
 router.post(
   "/create",
-  middleWareController.verifyTokenAndAdminAuth,
+
   upload.single("file"),
   productController.create
 );

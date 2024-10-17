@@ -4,17 +4,15 @@ const dayjs = require("dayjs");
 function getMonthRange(month, year) {
   const date = dayjs(`${year}-${month}-01`);
   const currentYear = dayjs().year();
-  const currentMonth = dayjs().month() + 1; // dayjs months are 0-indexed
+  const currentMonth = dayjs().month() + 1;
   const today = dayjs();
 
   const startOfMonth = date.startOf("month");
 
   let endOfMonth;
   if (month == currentMonth && year == currentYear) {
-    // If the month is the current month, set end date to today
     endOfMonth = today;
   } else {
-    // For past months, set the end date to the last day of the month
     endOfMonth = date.endOf("month");
   }
 
@@ -28,7 +26,6 @@ class RevenueController {
   getRevenueMonth(req, res, next) {
     let { month, year } = req.query;
 
-    // Validate month and year
     const currentYear = dayjs().year();
     const currentMonth = dayjs().month() + 1;
 
