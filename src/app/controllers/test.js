@@ -23,9 +23,9 @@ Revenue.getRevenueMonth = function (startDate, endDate, result) {
       const formattedData = data.map((item) => ({
         date: new Date(item.date).toLocaleDateString("en-GB", {
           day: "2-digit",
-          month: "2-digit",
+          month: "2-digit"
         }),
-        total: item.total,
+        total: item.total
       }));
       result({ status: true, data: formattedData });
     }

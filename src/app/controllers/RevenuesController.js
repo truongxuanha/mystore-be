@@ -18,7 +18,7 @@ function getMonthRange(month, year) {
 
   return {
     startOfMonth: startOfMonth.format("YYYY-MM-DD"),
-    endOfMonth: endOfMonth.format("YYYY-MM-DD"),
+    endOfMonth: endOfMonth.format("YYYY-MM-DD")
   };
 }
 

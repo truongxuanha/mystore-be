@@ -15,12 +15,7 @@ router.get("/new_product", productController.getNewProduct);
 
 router.get("/hot_product", productController.getHotroduct);
 
-router.post(
-  "/create",
-
-  upload.single("file"),
-  productController.create
-);
+router.post("/create", upload.single("thumbnail"), middleWareController.verifyTokenAndAdminAuth, productController.create);
 
 router.get("/search", productController.search);
 
@@ -32,22 +27,10 @@ router.get("/:id/get_one", productController.getById);
 
 router.get("/:slug/get_by_slug_manu", productController.getBySlugManu);
 
-router.put(
-  "/:id/update",
-  middleWareController.verifyTokenAndAdminAuth,
-  productController.update
-);
+router.put("/:id/update", upload.single("thumbnail"), middleWareController.verifyTokenAndAdminAuth, productController.update);
 
-router.delete(
-  "/:id/remove",
-  middleWareController.verifyTokenAndAdminAuth,
-  productController.remove
-);
+router.delete("/:id/remove", middleWareController.verifyTokenAndAdminAuth, productController.remove);
 
-router.patch(
-  "/update-quantity",
-  middleWareController.verifyToken,
-  productController.updateQuantity
-);
+router.patch("/update-quantity", middleWareController.verifyToken, productController.updateQuantity);
 
 module.exports = router;

@@ -1,6 +1,6 @@
-const mysql = require('../../config/mysql_db');
-const dayjs = require('dayjs');
-const Cart = require('./Cart');
+const mysql = require("../../config/mysql_db");
+const dayjs = require("dayjs");
+const Cart = require("./Cart");
 
 const Bill = function (Bill) {
   this.id = Bill.id;
@@ -14,80 +14,72 @@ const Bill = function (Bill) {
 };
 
 Bill.getByAccount = function (id, result) {
-  mysql.query(
-    'SELECT * FROM `bill` WHERE id_account=? ORDER BY createAt DESC',
-    id,
-    function (err, data) {
-      if (err) {
-        result({ status: false, data: err });
-      } else {
-        data.map((item) => {
-          if (item.createAt) {
-            let crtA = dayjs(item.createAt);
-            item.createAt = crtA.format('YYYY-MM-DD').toString();
-          }
-          if (item.paymentAt) {
-            let pmA = dayjs(item.paymentAt);
-            item.paymentAt = pmA.format('YYYY-MM-DD').toString();
-          }
-          if (item.confirmAt) {
-            let spA = dayjs(item.confirmAt);
-            item.confirmAt = spA.format('YYYY-MM-DD').toString();
-          }
-          if (item.cancellationAt) {
-            let clA = dayjs(item.cancellationAt);
-            item.cancellationAt = clA.format('YYYY-MM-DD').toString();
-          }
-        });
-        result({ status: true, data: data });
-      }
+  mysql.query("SELECT * FROM `bill` WHERE id_account=? ORDER BY createAt DESC", id, function (err, data) {
+    if (err) {
+      result({ status: false, data: err });
+    } else {
+      data.map((item) => {
+        if (item.createAt) {
+          let crtA = dayjs(item.createAt);
+          item.createAt = crtA.format("YYYY-MM-DD").toString();
+        }
+        if (item.paymentAt) {
+          let pmA = dayjs(item.paymentAt);
+          item.paymentAt = pmA.format("YYYY-MM-DD").toString();
+        }
+        if (item.confirmAt) {
+          let spA = dayjs(item.confirmAt);
+          item.confirmAt = spA.format("YYYY-MM-DD").toString();
+        }
+        if (item.cancellationAt) {
+          let clA = dayjs(item.cancellationAt);
+          item.cancellationAt = clA.format("YYYY-MM-DD").toString();
+        }
+      });
+      result({ status: true, data: data });
     }
-  );
+  });
 };
 
 Bill.getByStatus = function (status, id, result) {
-  mysql.query(
-    'SELECT * FROM bill WHERE `status` =? AND `id_account`=?  ORDER BY createAt DESC',
-    [status, id],
-    function (err, data) {
-      if (err) {
-        result({ status: false, data: err });
-      } else {
-        data.map((item) => {
-          if (item.createAt) {
-            let crtA = dayjs(item.createAt);
-            item.createAt = crtA.format('YYYY-MM-DD').toString();
-          }
-          if (item.paymentAt) {
-            let pmA = dayjs(item.paymentAt);
-            item.paymentAt = pmA.format('YYYY-MM-DD').toString();
-          }
-          if (item.confirmAt) {
-            let spA = dayjs(item.confirmAt);
-            item.confirmAt = spA.format('YYYY-MM-DD').toString();
-          }
-          if (item.cancellationAt) {
-            let clA = dayjs(item.cancellationAt);
-            item.cancellationAt = clA.format('YYYY-MM-DD').toString();
-          }
-        });
-        result({ status: true, data: data });
-      }
+  mysql.query("SELECT * FROM bill WHERE `status` =? AND `id_account`=?  ORDER BY createAt DESC", [status, id], function (err, data) {
+    if (err) {
+      result({ status: false, data: err });
+    } else {
+      data.map((item) => {
+        if (item.createAt) {
+          let crtA = dayjs(item.createAt);
+          item.createAt = crtA.format("YYYY-MM-DD").toString();
+        }
+        if (item.paymentAt) {
+          let pmA = dayjs(item.paymentAt);
+          item.paymentAt = pmA.format("YYYY-MM-DD").toString();
+        }
+        if (item.confirmAt) {
+          let spA = dayjs(item.confirmAt);
+          item.confirmAt = spA.format("YYYY-MM-DD").toString();
+        }
+        if (item.cancellationAt) {
+          let clA = dayjs(item.cancellationAt);
+          item.cancellationAt = clA.format("YYYY-MM-DD").toString();
+        }
+      });
+      result({ status: true, data: data });
     }
-  );
+  });
 };
 
 Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
-  let querySearch = '';
-  if (query !== '') {
+  let querySearch = "";
+  if (query !== "") {
     querySearch = `AND (bill.id LIKE '%${query}%' OR account.account_name LIKE '%${query}%')`;
   }
-  let queryStatus = '';
-  if (status !== '') {
+  let queryStatus = "";
+  if (status !== "") {
     queryStatus = `AND bill.status = '${status}'`;
   }
-  if (status === 'all') {
-    queryStatus = '';
+  if (status === "all") {
+    queryStatus = "";
   }
   const querySelect = (totalPage, totalItem) => {
     mysql.query(
@@ -101,19 +93,19 @@ Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
           data.map((item, index) => {
             if (item.createAt) {
               let crtA = dayjs(item.createAt);
-              item.createAt = crtA.format('YYYY-MM-DD').toString();
+              item.createAt = crtA.format("YYYY-MM-DD").toString();
             }
             if (item.paymentAt) {
               let pmA = dayjs(item.paymentAt);
-              item.paymentAt = pmA.format('YYYY-MM-DD').toString();
+              item.paymentAt = pmA.format("YYYY-MM-DD").toString();
             }
             if (item.confirmAt) {
               let spA = dayjs(item.confirmAt);
-              item.confirmAt = spA.format('YYYY-MM-DD').toString();
+              item.confirmAt = spA.format("YYYY-MM-DD").toString();
             }
             if (item.cancellationAt) {
               let clA = dayjs(item.cancellationAt);
-              item.cancellationAt = clA.format('YYYY-MM-DD').toString();
+              item.cancellationAt = clA.format("YYYY-MM-DD").toString();
             }
             item.key = index;
           });
@@ -121,7 +113,7 @@ Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
             status: true,
             data: data,
             totalPage: totalPage,
-            totalItem: totalItem,
+            totalItem: totalItem
           });
         }
       }
@@ -147,7 +139,7 @@ Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
 };
 
 Bill.create = function (formData, result) {
-  mysql.query('INSERT INTO `bill` SET ?', formData, function (err, data) {
+  mysql.query("INSERT INTO `bill` SET ?", formData, function (err, data) {
     if (err) {
       result({ Success: false, data: err });
     } else {
@@ -157,22 +149,18 @@ Bill.create = function (formData, result) {
 };
 
 Bill.update = function (id, formData, result) {
-  mysql.query(
-    'UPDATE `bill` SET ? where id=?',
-    [formData, id],
-    function (err, data) {
-      if (err) {
-        result({ success: false, data: err });
-      } else {
-        result({ success: true, data: formData });
-      }
+  mysql.query("UPDATE `bill` SET ? where id=?", [formData, id], function (err, data) {
+    if (err) {
+      result({ success: false, data: err });
+    } else {
+      result({ success: true, data: formData });
     }
-  );
+  });
 };
 
 Bill.remove = function (id, result) {
   const deleteBill = () => {
-    mysql.query('DELETE FROM `bill` where id=?', id, function (err, data) {
+    mysql.query("DELETE FROM `bill` where id=?", id, function (err, data) {
       if (err) {
         result({ success: false, data: err });
       } else {
@@ -180,17 +168,13 @@ Bill.remove = function (id, result) {
       }
     });
   };
-  mysql.query(
-    'DELETE FROM `detail_bill` where id_bill= ? ',
-    id,
-    function (err, data) {
-      if (err) {
-        result({ success: false, data: err });
-      } else {
-        deleteBill();
-      }
+  mysql.query("DELETE FROM `detail_bill` where id_bill= ? ", id, function (err, data) {
+    if (err) {
+      result({ success: false, data: err });
+    } else {
+      deleteBill();
     }
-  );
+  });
 };
 
 module.exports = Bill;

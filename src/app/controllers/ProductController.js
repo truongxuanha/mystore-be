@@ -1,7 +1,7 @@
 const Products = require("../models/Products");
 
 const { createSlug } = require("../../until/slug");
-
+const bucket = require("../../config/firebase/firebaseAdmin");
 class ProductController {
   //[GET] / product
   index(req, res, next) {
@@ -19,16 +19,9 @@ class ProductController {
     const page = data.page || "";
     const idManu = data.manufacturer || "";
     const itemInPage = data.item || "";
-    Products.getAllByAdmin(
-      query,
-      sort,
-      idManu,
-      page,
-      itemInPage,
-      function (data) {
-        res.json(data);
-      }
-    );
+    Products.getAllByAdmin(query, sort, idManu, page, itemInPage, function (data) {
+      res.json(data);
+    });
   }
 
   //[GET] / product/ :slug
@@ -59,17 +52,9 @@ class ProductController {
     const page = data.page;
     const itemInPage = data.item;
 
-    Products.getBySlugManu(
-      slug,
-      min,
-      max,
-      sort,
-      page,
-      itemInPage,
-      function (data) {
-        res.json(data);
-      }
-    );
+    Products.getBySlugManu(slug, min, max, sort, page, itemInPage, function (data) {
+      res.json(data);
+    });
   }
 
   //[GET] / product/ random
@@ -116,38 +101,29 @@ class ProductController {
   }
 
   //[POST] / product / create
-  // [POST] / product / create
+
   create(req, res) {
     const formData = req.body;
     formData.slug = createSlug(formData.name);
 
-    // Check if any file is uploaded
     if (!req.file) {
-      return res
-        .status(400)
-        .json({ status: false, message: "No file uploaded." });
+      return res.status(400).json({ status: false, message: "No file uploaded." });
     }
 
-    // Firebase upload logic
-    const blob = bucket.file(req.file.originalname);
+    const filePath = `public/${req.file.originalname}`;
+    const blob = bucket.file(filePath);
     const blobStream = blob.createWriteStream({
       metadata: {
-        contentType: req.file.mimetype,
-      },
+        contentType: req.file.mimetype
+      }
     });
-
     blobStream.on("error", (err) => {
       return res.status(500).json({ status: false, data: err });
     });
-
     blobStream.on("finish", () => {
-      // Public URL for accessing the file
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-
-      // Save the URL to the product data
+      const encodedBlobName = encodeURIComponent(blob.name);
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedBlobName}?alt=media`;
       formData.thumbnail = publicUrl;
-
-      // Save the product to the database
       Products.create(formData, function (data) {
         res.json(data);
       });
@@ -163,14 +139,13 @@ class ProductController {
 
     formData.slug = createSlug(formData.name);
 
-    // Check if a new file is uploaded
     if (req.file) {
-      // Firebase upload logic for the new file
-      const blob = bucket.file(req.file.originalname);
+      const filePath = `public/${req.file.originalname}`;
+      const blob = bucket.file(filePath);
       const blobStream = blob.createWriteStream({
         metadata: {
-          contentType: req.file.mimetype,
-        },
+          contentType: req.file.mimetype
+        }
       });
 
       blobStream.on("error", (err) => {
@@ -178,13 +153,11 @@ class ProductController {
       });
 
       blobStream.on("finish", () => {
-        // Public URL for the new image
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+        const encodedBlobName = encodeURIComponent(blob.name);
+        const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedBlobName}?alt=media`;
 
-        // Update thumbnail with new image URL
         formData.thumbnail = publicUrl;
 
-        // Update product in the database
         Products.update(id, formData, function (data) {
           res.json(data);
         });
@@ -192,7 +165,6 @@ class ProductController {
 
       blobStream.end(req.file.buffer);
     } else {
-      // If no file is uploaded, update other fields without modifying the thumbnail
       Products.update(id, formData, function (data) {
         res.json(data);
       });

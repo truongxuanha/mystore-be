@@ -1,10 +1,10 @@
 const mysql = require("../../config/mysql_db");
 
-const Revenue = function() {};
+const Revenue = function () {};
 
 // Function to get revenue for the specified month
-Revenue.getRevenueMonth = function(startDate, endDate, result) {
-    const query = `
+Revenue.getRevenueMonth = function (startDate, endDate, result) {
+  const query = `
     WITH RECURSIVE DateRange AS (
         SELECT ? AS date
         UNION ALL
@@ -21,20 +21,20 @@ Revenue.getRevenueMonth = function(startDate, endDate, result) {
     ORDER BY d.date;
 `;
 
-    mysql.query(query, [startDate, endDate], function(err, data) {
-        if (err) {
-            result({ status: false, data: err });
-        } else {
-            const formattedData = data.map((item) => ({
-                date: new Date(item.date).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "2-digit",
-                }),
-                total: item.total,
-            }));
-            result({ status: true, data: formattedData });
-        }
-    });
+  mysql.query(query, [startDate, endDate], function (err, data) {
+    if (err) {
+      result({ status: false, data: err });
+    } else {
+      const formattedData = data.map((item) => ({
+        date: new Date(item.date).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit"
+        }),
+        total: item.total
+      }));
+      result({ status: true, data: formattedData });
+    }
+  });
 };
 
 module.exports = Revenue;

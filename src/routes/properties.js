@@ -1,20 +1,20 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-const propertiesController = require('../app/controllers/PropertiesController')
+const propertiesController = require("../app/controllers/PropertiesController");
 
-router.get('/:id', propertiesController.getByIdProduct)
+router.get("/:id", propertiesController.getByIdProduct);
 
-router.put('/:id/update', propertiesController.update)
+router.put("/:id/update", propertiesController.update);
 
-router.delete('/:id/remove', propertiesController.remove)
+router.delete("/:id/remove", propertiesController.remove);
 
-router.post('/create', propertiesController.create)
+router.post("/create", propertiesController.create);
 
-router.post('/addcolumn', propertiesController.addColumn)
+router.post("/addcolumn", propertiesController.addColumn);
 
-router.post('/dropcolumn', propertiesController.dropColumn)
+router.post("/dropcolumn", propertiesController.dropColumn);
 
-router.get('/', propertiesController.index)
+router.get("/", propertiesController.index);
 
-module.exports = router
+module.exports = router;

@@ -1,17 +1,17 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-const newsCategoryController = require('../app/controllers/NewsCategoryController')
-const middleWareController = require('../app/controllers/MiddleWareController')
+const newsCategoryController = require("../app/controllers/NewsCategoryController");
+const middleWareController = require("../app/controllers/MiddleWareController");
 
-router.get('/', newsCategoryController.getAll)
+router.get("/", newsCategoryController.getAll);
 
-router.get('/get-all-by-admin', middleWareController.verifyTokenAndAdminAuth, newsCategoryController.getAllByAdmin)
+router.get("/get-all-by-admin", middleWareController.verifyTokenAndAdminAuth, newsCategoryController.getAllByAdmin);
 
-router.post('/create', middleWareController.verifyTokenAndAdminAuth, newsCategoryController.create)
+router.post("/create", middleWareController.verifyTokenAndAdminAuth, newsCategoryController.create);
 
-router.put('/:id/update', middleWareController.verifyTokenAndAdminAuth, newsCategoryController.update)
+router.put("/:id/update", middleWareController.verifyTokenAndAdminAuth, newsCategoryController.update);
 
-router.delete('/:id/remove', middleWareController.verifyTokenAndAdminAuth, newsCategoryController.remove)
+router.delete("/:id/remove", middleWareController.verifyTokenAndAdminAuth, newsCategoryController.remove);
 
-module.exports = router
+module.exports = router;
