@@ -116,7 +116,7 @@ Products.getBySlugManu = function(
     result
 ) {
     mysql.query(
-        `SELECT products.id, products.id_manu, products.name,manufacturer.name as mn_name, products.thumbnail, products.price,products.discount, ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) as final_price, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk, manufacturer.name as mn_name FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product LEFT JOIN manufacturer ON products.id_manu = manufacturer.id WHERE manufacturer.slug = ?  AND ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) BETWEEN ${min} AND ${max} ORDER BY final_price ${sort}`,
+        `SELECT products.id, products.id_manu, products.name as product_name,manufacturer.name as mn_name, products.thumbnail, products.price,products.discount, ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) as final_price, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk, manufacturer.name as mn_name FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product LEFT JOIN manufacturer ON products.id_manu = manufacturer.id WHERE manufacturer.slug = ?  AND ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) BETWEEN ${min} AND ${max} ORDER BY final_price ${sort}`,
         slug,
         function(err, data) {
             if (err) {
@@ -212,7 +212,7 @@ Products.getById = function(id, result) {
 // ORDER BY RAND() LIMIT 20
 Products.getRandom = function(result) {
     mysql.query(
-        "SELECT products.id, products.id_manu, products.name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY RAND() LIMIT 20",
+        "SELECT products.id, products.id_manu, products.name as product_name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY RAND() LIMIT 20",
         function(err, data) {
             if (err) {
                 result({ status: false, data: err });
@@ -280,7 +280,7 @@ Products.getRandom = function(result) {
 
 Products.search = function(query, min, max, sort, page, itemInPage, result) {
     mysql.query(
-        `SELECT products.id, products.id_manu, products.name, products.thumbnail, products.price,products.discount, ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) as final_price, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk, manufacturer.name as mn_name FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product LEFT JOIN manufacturer ON products.id_manu = manufacturer.id WHERE products.name LIKE '%${query}%' AND ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) BETWEEN ${min} AND ${max} ORDER BY final_price ${sort} `,
+        `SELECT products.id, products.id_manu, products.name as product_name , products.thumbnail, products.price,products.discount, ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) as final_price, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk, manufacturer.name as mn_name FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product LEFT JOIN manufacturer ON products.id_manu = manufacturer.id WHERE products.name LIKE '%${query}%' AND ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) BETWEEN ${min} AND ${max} ORDER BY final_price ${sort} `,
         function(err, data) {
             if (err) {
                 result({ status: false, data: err });
@@ -367,7 +367,7 @@ Products.search = function(query, min, max, sort, page, itemInPage, result) {
 // SELECT * FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product ORDER BY products.other_discount DESC LIMIT 20
 Products.getBigSaleProduct = function(result) {
     mysql.query(
-        "SELECT products.id, products.id_manu, products.name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY products.other_discount  DESC LIMIT 20",
+        "SELECT products.id, products.id_manu, products.name as product_name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY products.other_discount  DESC LIMIT 20",
         function(err, data) {
             if (err) {
                 result({ status: false, data: err });
@@ -438,7 +438,7 @@ Products.getBigSaleProduct = function(result) {
 
 Products.getNewProduct = function(result) {
     mysql.query(
-        "SELECT products.id, products.id_manu, products.name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY products.createAt DESC LIMIT 20",
+        "SELECT products.id, products.id_manu, products.name as product_name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY products.createAt DESC LIMIT 20",
         function(err, data) {
             if (err) {
                 result({ status: false, data: err });
@@ -507,7 +507,7 @@ Products.getNewProduct = function(result) {
 // ORDER BY other_discount DESC LIMIT 10
 Products.getHotProduct = function(result) {
     mysql.query(
-        "SELECT products.id,products.id_manu, products.name, products.thumbnail,products.price,products.discount, products.quantity, products.slug as product_slug,products.other_discount ,ratting_comment.star, ratting_comment.content, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product INNER JOIN (SELECT products.id, SUM(detail_bill.quantity) AS total FROM products LEFT JOIN detail_bill ON products.id = detail_bill.id_product GROUP BY detail_bill.id_product ORDER BY total DESC LIMIT 20) AS TB2 WHERE products.id = TB2.id",
+        "SELECT products.id,products.id_manu, products.name as product_name, products.thumbnail,products.price,products.discount, products.quantity, products.slug as product_slug,products.other_discount ,ratting_comment.star, ratting_comment.content, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product INNER JOIN (SELECT products.id, SUM(detail_bill.quantity) AS total FROM products LEFT JOIN detail_bill ON products.id = detail_bill.id_product GROUP BY detail_bill.id_product ORDER BY total DESC LIMIT 20) AS TB2 WHERE products.id = TB2.id",
         function(err, data) {
             if (err) {
                 result({ status: false, data: err });
