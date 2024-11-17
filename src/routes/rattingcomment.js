@@ -4,7 +4,7 @@ const router = express.Router();
 const middleWareController = require("../app/controllers/MiddleWareController");
 const rattingCommentController = require("../app/controllers/RattingCommentController");
 
-router.get("/:id/get-by-id-product", rattingCommentController.getByIdProduct);
+router.get("/:id/comment", rattingCommentController.getByIdProduct);
 
 router.get("/:id/get-all-by-id-product", rattingCommentController.getAllByIdProduct);
 

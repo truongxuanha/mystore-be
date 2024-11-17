@@ -4,7 +4,7 @@ const Cart = function () {};
 
 Cart.getByAccount = function (idAccount, result) {
   mysql.query(
-    "SELECT * FROM cart LEFT JOIN( SELECT products.id as pd_id, products.name as product_name, products.slug, products.id_manu, products.thumbnail, products.price, products.discount, products.other_discount, products.description, IFNULL(products.quantity - IFNULL(b.dtb_quantity,0), 0) as total_quantity FROM products LEFT JOIN (SELECT detail_bill.id_product as dtb_id_product, SUM(detail_bill.quantity) as dtb_quantity FROM detail_bill, bill WHERE detail_bill.id_bill = bill.id AND bill.status < 3 GROUP BY detail_bill.id_product) as b ON products.id = b.dtb_id_product) as c ON cart.id_product = c.pd_id WHERE cart.id_account = ? ",
+    "SELECT * FROM cart LEFT JOIN( SELECT products.id as product_id, products.name as product_name, products.slug, products.id_manu, products.thumbnail, products.price, products.discount, products.other_discount, products.description, IFNULL(products.quantity - IFNULL(b.dtb_quantity,0), 0) as total_quantity FROM products LEFT JOIN (SELECT detail_bill.id_product as dtb_id_product, SUM(detail_bill.quantity) as dtb_quantity FROM detail_bill, bill WHERE detail_bill.id_bill = bill.id AND bill.status < 3 GROUP BY detail_bill.id_product) as b ON products.id = b.dtb_id_product) as c ON cart.id_product = c.product_id WHERE cart.id_account = ? ",
     idAccount,
     function (err, data) {
       if (err) {
@@ -23,7 +23,7 @@ Cart.create = function (formData, result) {
         result({ success: false, data: err });
       } else {
         mysql.query(
-          `SELECT * FROM cart LEFT JOIN( SELECT products.id as pd_id, products.name as product_name, products.slug, products.id_manu, products.thumbnail, products.price, products.discount, products.other_discount, products.description, IFNULL(products.quantity - IFNULL(b.dtb_quantity,0), 0) as total_quantity FROM products LEFT JOIN (SELECT detail_bill.id_product as dtb_id_product, SUM(detail_bill.quantity) as dtb_quantity FROM detail_bill, bill WHERE detail_bill.id_bill = bill.id AND bill.status < 3 GROUP BY detail_bill.id_product) as b ON products.id = b.dtb_id_product) as c ON cart.id_product = c.pd_id WHERE cart.id_account = '${formData[0].id_account}'`,
+          `SELECT * FROM cart LEFT JOIN( SELECT products.id as product_id, products.name as product_name, products.slug, products.id_manu, products.thumbnail, products.price, products.discount, products.other_discount, products.description, IFNULL(products.quantity - IFNULL(b.dtb_quantity,0), 0) as total_quantity FROM products LEFT JOIN (SELECT detail_bill.id_product as dtb_id_product, SUM(detail_bill.quantity) as dtb_quantity FROM detail_bill, bill WHERE detail_bill.id_bill = bill.id AND bill.status < 3 GROUP BY detail_bill.id_product) as b ON products.id = b.dtb_id_product) as c ON cart.id_product = c.product_id WHERE cart.id_account = '${formData[0].id_account}'`,
           function (err, data) {
             if (err) {
               result({ success: false, data: err });

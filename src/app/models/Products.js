@@ -15,7 +15,7 @@ const Products = function (product) {
 };
 
 Products.getAll = function (result) {
-  mysql.query("SELECT * FROM `products`", function (err, data) {
+  mysql.query("SELECT *,id FROM `products`", function (err, data) {
     if (err) {
       result({ status: false, data: err });
     } else {
@@ -28,9 +28,9 @@ Products.getAllByAdmin = function (query, sort, idManu, page, itemInPage, result
   let querySearch = "";
   if (query !== "") {
     if (idManu === "all") {
-      querySearch = `WHERE (product_id LIKE '%${query}%' OR product_name LIKE '%${query}%')`;
+      querySearch = `WHERE (id LIKE '%${query}%' OR product_name LIKE '%${query}%')`;
     } else {
-      querySearch = `WHERE (product_id LIKE '%${query}%' OR product_name LIKE '%${query}%') AND id = '${idManu}'`;
+      querySearch = `WHERE (id LIKE '%${query}%' OR product_name LIKE '%${query}%') AND id = '${idManu}'`;
     }
   } else {
     if (idManu === "all") {
@@ -86,99 +86,131 @@ Products.getAllByAdmin = function (query, sort, idManu, page, itemInPage, result
 };
 
 Products.getBySlug = function (slug, result) {
-  mysql.query(
-    "SELECT * FROM manufacturer RIGHT JOIN (SELECT products.id as product_id, products.name as product_name, products.id_manu, products.thumbnail, products.price, products.discount, products.quantity, products.slug as product_slug, products.other_discount, products.description, IFNULL(products.quantity - IFNULL(b.dtb_quantity,0), 0) as remaining_quantity FROM products LEFT JOIN (SELECT detail_bill.id_product as dtb_id_product, SUM(detail_bill.quantity) as dtb_quantity FROM detail_bill, bill WHERE detail_bill.id_bill = bill.id AND bill.status < 3 GROUP BY detail_bill.id_product) as b ON products.id = b.dtb_id_product WHERE products.slug = ? LIMIT 1) as d ON manufacturer.id = d.id_manu",
-    slug,
-    function (err, data) {
-      if (err) {
-        result({ status: false, data: err });
-      } else {
-        result({ status: true, data: data });
-      }
+  const query = `
+    SELECT 
+      products.id AS product_id,
+      products.name AS product_name,
+      products.id_manu,
+      products.thumbnail,
+      products.price,
+      products.discount,
+      products.quantity,
+      products.slug AS product_slug,
+      products.other_discount,
+      products.description,
+      IFNULL(products.quantity - IFNULL(b.dtb_quantity, 0), 0) AS remaining_quantity,
+      manufacturer.name AS manufacturer_name
+    FROM products
+    LEFT JOIN (
+      SELECT 
+        detail_bill.id_product AS dtb_id_product, 
+        SUM(detail_bill.quantity) AS dtb_quantity
+      FROM detail_bill
+      INNER JOIN bill ON detail_bill.id_bill = bill.id
+      WHERE bill.status < 3
+      GROUP BY detail_bill.id_product
+    ) AS b ON products.id = b.dtb_id_product
+    LEFT JOIN manufacturer ON products.id_manu = manufacturer.id
+    WHERE products.slug = ?
+    LIMIT 1;
+  `;
+
+  mysql.query(query, [slug], (err, data) => {
+    if (err) {
+      result({ status: false, data: err });
+    } else {
+      result({ status: true, data: data[0] || null });
     }
-  );
+  });
 };
 
 Products.getBySlugManu = function (slug, min, max, sort, page, itemInPage, result) {
   mysql.query(
-    `SELECT products.id, products.id_manu, products.name as product_name,manufacturer.name as mn_name, products.thumbnail, products.price,products.discount, ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) as final_price, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk, manufacturer.name as mn_name FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product LEFT JOIN manufacturer ON products.id_manu = manufacturer.id WHERE manufacturer.slug = ?  AND ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) BETWEEN ${min} AND ${max} ORDER BY final_price ${sort}`,
-    slug,
+    `SELECT 
+      products.id as product_id, 
+      products.id_manu, 
+      products.name as product_name,
+      manufacturer.name as mn_name, 
+      products.thumbnail, 
+      products.price,
+      products.discount, 
+      ((products.price - products.price / 100 * products.discount) - 
+      (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) as final_price, 
+      products.quantity,
+      products.slug as product_slug, 
+      products.other_discount, 
+      ratting_comment.star, 
+      ratting_comment.parent_id, 
+      properties.cpu, 
+      properties.ram, 
+      properties.screen_size, 
+      properties.hard_disk 
+    FROM 
+      products 
+    LEFT JOIN 
+      ratting_comment ON products.id = ratting_comment.id_product 
+    LEFT JOIN 
+      properties ON products.id = properties.id_product 
+    LEFT JOIN 
+      manufacturer ON products.id_manu = manufacturer.id 
+    WHERE 
+      manufacturer.slug = ?  
+      AND 
+      ((products.price - products.price / 100 * products.discount) - 
+      (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) 
+      BETWEEN ? AND ? 
+    ORDER BY 
+      final_price ${mysql.escape(sort)} 
+    LIMIT ?, ?`,
+    [slug, min, max, (page - 1) * itemInPage, itemInPage],
     function (err, data) {
       if (err) {
-        result({ status: false, data: err });
-      } else {
-        let newData = [];
-
-        for (let index = 1; index < data.length; index++) {
-          if (index === 1) {
-            newData.push(data[index - 1]);
-          }
-          if (data[index].id !== data[index - 1].id) {
-            newData.push(data[index]);
-          }
-        }
-        newData.map((item) => {
-          let dataStar = [0, 0, 0, 0, 0];
-          let totalStar = 0;
-          data.map((it) => {
-            if (item.id == it.id && it.parent_id === null) {
-              if (it.star == 1) {
-                dataStar[0] += 1;
-              }
-              if (it.star == 2) {
-                dataStar[1] += 1;
-              }
-              if (it.star == 3) {
-                dataStar[2] += 1;
-              }
-              if (it.star == 4) {
-                dataStar[3] += 1;
-              }
-              if (it.star == 5) {
-                dataStar[4] += 1;
-              }
-              if (it.star !== null) {
-                totalStar += 1;
-              }
-            }
-          });
-
-          let type = 0;
-          let point = 0;
-          let a = 1 * dataStar[0] + 2 * dataStar[1] + 3 * dataStar[2] + 4 * dataStar[3] + 5 * dataStar[4];
-          let b = totalStar;
-          if (totalStar > 0) {
-            type = Math.round(a / b, 0);
-            point = (a / b).toFixed(1);
-          }
-          item.starType = type;
-          item.totalStar = totalStar;
-          item.point = point;
-          delete item.star;
-        });
-        let totalPage = newData.length / itemInPage;
-        let surplus = newData.length % itemInPage;
-        if (surplus > 0) {
-          totalPage += 1;
-        }
-        let dataResponse = [];
-        newData.map((item, index) => {
-          if (index >= page * itemInPage - itemInPage && index < page * itemInPage) {
-            dataResponse.push(item);
-          }
-        });
-        result({
-          status: true,
-          data: dataResponse,
-          totalPage: Math.floor(totalPage)
-        });
+        console.error("Database Error:", err);
+        return result({ status: false, data: "Database query failed" });
       }
+
+      let uniqueData = data.reduce((acc, current) => {
+        if (!acc.find((item) => item.product_id === current.product_id)) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+
+      uniqueData.forEach((item) => {
+        let dataStar = [0, 0, 0, 0, 0];
+        let totalStar = 0;
+
+        data.forEach((it) => {
+          if (item.product_id === it.product_id && it.parent_id === null) {
+            if (it.star >= 1 && it.star <= 5) {
+              dataStar[it.star - 1] += 1;
+              totalStar += 1;
+            }
+          }
+        });
+
+        let a = dataStar.reduce((sum, value, index) => sum + value * (index + 1), 0);
+        let b = totalStar;
+        item.starType = b > 0 ? Math.round(a / b) : 0;
+        item.point = b > 0 ? (a / b).toFixed(1) : 0;
+        item.totalStar = totalStar;
+        delete item.star;
+      });
+
+      let totalPage = Math.ceil(uniqueData.length / itemInPage);
+      let dataResponse = uniqueData.slice((page - 1) * itemInPage, page * itemInPage);
+
+      result({
+        status: true,
+        data: dataResponse,
+        totalPage: totalPage
+      });
     }
   );
 };
 
 Products.getById = function (id, result) {
-  mysql.query("SELECT * FROM `products` where id=?", id, function (err, data) {
+  mysql.query("SELECT *, id as product_id, name as product_name FROM `products` where id=?", id, function (err, data) {
     if (err) {
       result({ status: false, data: err });
     } else {
@@ -543,13 +575,32 @@ Products.update = function (id, formData, result) {
 };
 
 Products.remove = function (id, result) {
-  mysql.query("DELETE FROM `products` WHERE `id`=?", id, function (err, data) {
-    if (err) {
-      result({ status: false, data: err });
-    } else {
-      result({ status: true, data: "Xóa dữ liệu thành công!" });
+  mysql.query(
+    `SELECT
+      (SELECT COUNT(*) FROM \`detail_bill\` WHERE \`id_product\` = ?) AS bill_count,
+      (SELECT COUNT(*) FROM \`cart\` WHERE \`id_product\` = ?) AS cart_count`,
+    [id, id],
+    function (err, data) {
+      if (err) {
+        return result({ status: false, data: err });
+      }
+
+      if (data[0].bill_count > 0) {
+        return result({ status: false, data: "Sản phẩm đang được sử dụng trong hóa đơn, không thể xóa!" });
+      }
+
+      if (data[0].cart_count > 0) {
+        return result({ status: false, data: "Sản phẩm đang được sử dụng trong giỏ hàng, không thể xóa!" });
+      }
+
+      mysql.query("DELETE FROM `products` WHERE `id` = ?", [id], function (err, data) {
+        if (err) {
+          return result({ status: false, data: err });
+        }
+        return result({ status: true, data: "Xóa dữ liệu thành công!" });
+      });
     }
-  });
+  );
 };
 
 Products.updateQuantity = function (formData, result) {

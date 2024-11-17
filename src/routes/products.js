@@ -23,7 +23,7 @@ router.get("/random", productController.getRandom);
 
 router.get("/:slug", productController.getBySlug);
 
-router.get("/:id/get_one", productController.getById);
+router.get("/product-detai/:id", productController.getById);
 
 router.get("/:slug/get_by_slug_manu", productController.getBySlugManu);
 

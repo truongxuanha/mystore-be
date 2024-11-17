@@ -6,11 +6,21 @@ const RattingComment = function () {};
 RattingComment.getByIdProduct = function (id, page, itemInPage, sort, star, result) {
   const queryStar = star === "all" ? "" : `AND star = ${star}`;
 
-  const querySelectAndFilter = (totalPage, dataAccount) => {
+  const querySelectAndFilter = (totalPage, dataAccount, starStats) => {
     mysql.query(
-      `SELECT account.full_name, account.permission, account.avatar, rt1.id, rt1.id_account, rt1.id_product, rt1.content, rt1.star, rt1.createAt, rt1.updateAt, rt1.parent_id, rt1.status FROM ratting_comment as rt1 INNER JOIN (SELECT ratting_comment.id AS rt2_id FROM ratting_comment WHERE id_product = '${id}' AND parent_id IS NULL ${queryStar} ORDER BY IFNULL(updateAt, createAt) ${sort} LIMIT ${
-        itemInPage * page - itemInPage
-      },${itemInPage}) as rt2 ON rt1.id = rt2.rt2_id OR rt1.parent_id = rt2.rt2_id LEFT JOIN account ON rt1.id_account = account.id WHERE rt1.status = 0 ORDER BY IFNULL(rt1.updateAt, rt1.createAt) ${sort}`,
+      `SELECT account.full_name, account.permission, account.avatar, rt1.id, rt1.id_account, rt1.id_product, rt1.content, rt1.star, rt1.createAt, rt1.updateAt, rt1.parent_id, rt1.status 
+       FROM ratting_comment as rt1 
+       INNER JOIN (
+         SELECT ratting_comment.id AS rt2_id 
+         FROM ratting_comment 
+         WHERE id_product = '${id}' AND parent_id IS NULL ${queryStar} 
+         ORDER BY IFNULL(updateAt, createAt) ${sort} 
+         LIMIT ${itemInPage * page - itemInPage}, ${itemInPage}
+       ) as rt2 
+       ON rt1.id = rt2.rt2_id OR rt1.parent_id = rt2.rt2_id 
+       LEFT JOIN account ON rt1.id_account = account.id 
+       WHERE rt1.status = 0 
+       ORDER BY IFNULL(rt1.updateAt, rt1.createAt) ${sort}`,
       function (err, data) {
         if (err) {
           result({ status: false, data: err });
@@ -25,32 +35,63 @@ RattingComment.getByIdProduct = function (id, page, itemInPage, sort, star, resu
               item.updateAt = udA.format("DD-MM-YYYY").toString();
             }
           });
-          result({ status: true, data: data, totalPage: totalPage, dataAccount: dataAccount });
+          result({
+            status: true,
+            data: data,
+            totalPage: totalPage,
+            dataAccount: dataAccount,
+            starStats: starStats
+          });
         }
       }
     );
   };
 
-  const queryTotal = () => {
+  const queryTotalAndStats = () => {
+    const countStarQuery = `SELECT star, COUNT(*) as count FROM ratting_comment WHERE id_product = '${id}' AND parent_id IS NULL GROUP BY star`;
     mysql.query(
       `SELECT id_account FROM ratting_comment WHERE id_product = '${id}' AND parent_id IS NULL ${queryStar} AND status = 0 ORDER BY IFNULL(updateAt, createAt) ${sort}`,
       function (err, data) {
         if (err) {
           result({ status: false, data: err });
-        } else {
-          let totalPage = data.length / itemInPage;
-          let surplus = data.length % itemInPage;
-          if (surplus > 0) {
-            totalPage += 1;
-          }
-          totalPage = Math.floor(totalPage);
-          const dataAccount = data;
-          querySelectAndFilter(totalPage, dataAccount);
+          return;
         }
+        let totalPage = Math.ceil(data.length / itemInPage);
+        const dataAccount = data;
+        mysql.query(countStarQuery, function (errStats, starData) {
+          if (errStats) {
+            result({ status: false, data: errStats });
+            return;
+          }
+          const totalRatings = starData.reduce((sum, item) => sum + item.count, 0);
+          const starStats = {
+            totalRatings,
+            stars: {
+              1: { count: 0, percentage: "0" },
+              2: { count: 0, percentage: "0" },
+              3: { count: 0, percentage: "0" },
+              4: { count: 0, percentage: "0" },
+              5: { count: 0, percentage: "0" }
+            },
+            averageRating: 0
+          };
+
+          let totalScore = 0;
+          starData.forEach((item) => {
+            starStats.stars[item.star].count = item.count;
+            starStats.stars[item.star].percentage = `${((item.count / totalRatings) * 100).toFixed(2)}`;
+            totalScore += item.star * item.count;
+          });
+          if (!!totalScore && !!totalRatings) {
+            starStats.averageRating = (totalScore / totalRatings)?.toFixed(2);
+          }
+          querySelectAndFilter(totalPage, dataAccount, starStats);
+        });
       }
     );
   };
-  queryTotal();
+
+  queryTotalAndStats();
 };
 
 RattingComment.getAllByIdProduct = function (id, result) {
