@@ -13,6 +13,7 @@ const bannerRouter = require("./banner");
 const newsCategoryRouter = require("./newsCategory");
 const newsRouter = require("./news");
 const revenueRouter = require("./revenue");
+const salePopupRouter = require("./salePopup");
 
 function route(app) {
   app.use((req, res, next) => {
@@ -36,6 +37,7 @@ function route(app) {
   app.use("/v1/news-category", newsCategoryRouter);
   app.use("/v1/news", newsRouter);
   app.use("/v1/revenue", revenueRouter);
+  app.use("/v1/salepopup", salePopupRouter);
 }
 
 module.exports = route;

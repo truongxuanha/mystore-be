@@ -142,7 +142,7 @@ Account.getInfo = async function (id, result) {
           item.birthday = crtA.format("YYYY-MM-DD").toString();
         }
       });
-      result({ status: false, data: data });
+      result({ status: true, data: data });
     }
   });
 };
