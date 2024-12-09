@@ -141,9 +141,9 @@ Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
 Bill.create = function (formData, result) {
   mysql.query("INSERT INTO `bill` SET ?", formData, function (err, data) {
     if (err) {
-      result({ Success: false, data: err });
+      result({ success: false, data: err });
     } else {
-      result({ Success: true, data: { id: data.insertId, ...formData } });
+      result({ success: true, data: { id: data.insertId, ...formData } });
     }
   });
 };

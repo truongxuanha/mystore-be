@@ -221,7 +221,7 @@ Products.getById = function (id, result) {
 // ORDER BY RAND() LIMIT 20
 Products.getRandom = function (result) {
   mysql.query(
-    "SELECT products.id, products.id_manu, products.name as product_name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY RAND() LIMIT 20",
+    "SELECT products.id as product_id, products.id_manu, products.name as product_name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY RAND() LIMIT 20",
     function (err, data) {
       if (err) {
         result({ status: false, data: err });
@@ -232,7 +232,7 @@ Products.getRandom = function (result) {
           if (index === 1) {
             newData.push(data[index - 1]);
           }
-          if (data[index].id !== data[index - 1].id) {
+          if (data[index].product_id !== data[index - 1].product_id) {
             newData.push(data[index]);
           }
         }
@@ -240,7 +240,7 @@ Products.getRandom = function (result) {
           let dataStar = [0, 0, 0, 0, 0];
           let totalStar = 0;
           data.map((it) => {
-            if (item.id == it.id && it.parent_id === null) {
+            if (item.product_id == it.product_id && it.parent_id === null) {
               if (it.star == 1) {
                 dataStar[0] += 1;
               }
@@ -284,7 +284,7 @@ Products.getRandom = function (result) {
 
 Products.search = function (query, min, max, sort, page, itemInPage, result) {
   mysql.query(
-    `SELECT products.id, products.id_manu, products.name as product_name , products.thumbnail, products.price,products.discount, ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) as final_price, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk, manufacturer.name as mn_name FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product LEFT JOIN manufacturer ON products.id_manu = manufacturer.id WHERE products.name LIKE '%${query}%' AND ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) BETWEEN ${min} AND ${max} ORDER BY final_price ${sort} `,
+    `SELECT products.id as product_id, products.id_manu, products.name as product_name , products.thumbnail, products.price,products.discount, ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) as final_price, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk, manufacturer.name as mn_name FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product LEFT JOIN manufacturer ON products.id_manu = manufacturer.id WHERE products.name LIKE '%${query}%' AND ((products.price - products.price / 100 * products.discount) - (products.price - products.price / 100 * products.discount) / 100 * products.other_discount) BETWEEN ${min} AND ${max} ORDER BY final_price ${sort} `,
     function (err, data) {
       if (err) {
         result({ status: false, data: err });
@@ -295,7 +295,7 @@ Products.search = function (query, min, max, sort, page, itemInPage, result) {
           if (index === 1) {
             newData.push(data[index - 1]);
           }
-          if (data[index].id !== data[index - 1].id) {
+          if (data[index].product_id !== data[index - 1].product_id) {
             newData.push(data[index]);
           }
         }
@@ -303,7 +303,7 @@ Products.search = function (query, min, max, sort, page, itemInPage, result) {
           let dataStar = [0, 0, 0, 0, 0];
           let totalStar = 0;
           data.map((it) => {
-            if (item.id == it.id && it.parent_id === null) {
+            if (item.product_id == it.product_id && it.parent_id === null) {
               if (it.star == 1) {
                 dataStar[0] += 1;
               }
@@ -429,7 +429,7 @@ Products.getBigSaleProduct = function (result) {
 
 Products.getNewProduct = function (result) {
   mysql.query(
-    "SELECT products.id, products.id_manu, products.name as product_name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY products.createAt DESC LIMIT 20",
+    "SELECT products.id as product_id, products.id_manu, products.name as product_name, products.thumbnail, products.price,products.discount, products.quantity,products.slug as product_slug, products.other_discount, ratting_comment.star, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM `products` LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product ORDER BY products.createAt DESC LIMIT 20",
     function (err, data) {
       if (err) {
         result({ status: false, data: err });
@@ -440,7 +440,7 @@ Products.getNewProduct = function (result) {
           if (index === 1) {
             newData.push(data[index - 1]);
           }
-          if (data[index].id !== data[index - 1].id) {
+          if (data[index].product_id !== data[index - 1].product_id) {
             newData.push(data[index]);
           }
         }
@@ -448,7 +448,7 @@ Products.getNewProduct = function (result) {
           let dataStar = [0, 0, 0, 0, 0];
           let totalStar = 0;
           data.map((it) => {
-            if (item.id == it.id && it.parent_id === null) {
+            if (item.product_id == it.product_id && it.parent_id === null) {
               if (it.star == 1) {
                 dataStar[0] += 1;
               }
@@ -493,7 +493,7 @@ Products.getNewProduct = function (result) {
 // ORDER BY other_discount DESC LIMIT 10
 Products.getHotProduct = function (result) {
   mysql.query(
-    "SELECT products.id,products.id_manu, products.name as product_name, products.thumbnail,products.price,products.discount, products.quantity, products.slug as product_slug,products.other_discount ,ratting_comment.star, ratting_comment.content, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product INNER JOIN (SELECT products.id, SUM(detail_bill.quantity) AS total FROM products LEFT JOIN detail_bill ON products.id = detail_bill.id_product GROUP BY detail_bill.id_product ORDER BY total DESC LIMIT 20) AS TB2 WHERE products.id = TB2.id",
+    "SELECT products.id as product_id,products.id_manu, products.name as product_name, products.thumbnail,products.price,products.discount, products.quantity, products.slug as product_slug,products.other_discount ,ratting_comment.star, ratting_comment.content, ratting_comment.parent_id, properties.cpu, properties.ram, properties.screen_size, properties.hard_disk FROM products LEFT JOIN ratting_comment ON products.id = ratting_comment.id_product LEFT JOIN properties ON products.id = properties.id_product INNER JOIN (SELECT products.id, SUM(detail_bill.quantity) AS total FROM products LEFT JOIN detail_bill ON products.id = detail_bill.id_product GROUP BY detail_bill.id_product ORDER BY total DESC LIMIT 20) AS TB2 WHERE products.id = TB2.id",
     function (err, data) {
       if (err) {
         result({ status: false, data: err });
@@ -504,7 +504,7 @@ Products.getHotProduct = function (result) {
           if (index === 1) {
             newData.push(data[index - 1]);
           }
-          if (data[index].id !== data[index - 1].id) {
+          if (data[index].product_id !== data[index - 1].product_id) {
             newData.push(data[index]);
           }
         }
@@ -512,7 +512,7 @@ Products.getHotProduct = function (result) {
           let dataStar = [0, 0, 0, 0, 0];
           let totalStar = 0;
           data.map((it) => {
-            if (item.id == it.id && it.parent_id === null) {
+            if (item.product_id == it.product_id && it.parent_id === null) {
               if (it.star == 1) {
                 dataStar[0] += 1;
               }

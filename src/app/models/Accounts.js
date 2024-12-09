@@ -142,7 +142,7 @@ Account.getInfo = async function (id, result) {
           item.birthday = crtA.format("YYYY-MM-DD").toString();
         }
       });
-      result({ status: false, data: data });
+      result({ status: true, data: data });
     }
   });
 };
@@ -566,6 +566,25 @@ Account.checkRequiredAccount = function (formData, result) {
         });
       }
     }
+  });
+};
+Account.updateOTP = function (email, otp, expiresAt, result) {
+  const query = "UPDATE account SET otp = ?, otp_expires_at = ? WHERE email = ?";
+  mysql.query(query, [otp, expiresAt, email], (err, data) => {
+    result(err, data);
+  });
+};
+Account.findValidOTP = function (email, otp, result) {
+  const query = "SELECT * FROM account WHERE email = ? AND otp = ? AND otp_expires_at > NOW()";
+  mysql.query(query, [email, otp], (err, data) => {
+    result(err, data[0]);
+  });
+};
+
+Account.clearOTP = function (email, result) {
+  const query = "UPDATE account SET otp = NULL, otp_expires_at = NULL WHERE email = ?";
+  mysql.query(query, [email], (err, data) => {
+    result(err, data);
   });
 };
 
