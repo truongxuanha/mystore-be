@@ -83,7 +83,7 @@ Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
   }
   const querySelect = (totalPage, totalItem) => {
     mysql.query(
-      `SELECT bill.id,bill.id_account, account.account_name, account.email,account.phone,bill.createAt, bill.confirmAt, bill.paymentAt, bill.cancellationAt, bill.note_cancelation ,bill.discount,bill.status FROM bill, account WHERE bill.id_account = account.id ${querySearch} ${queryStatus} ORDER BY createAt DESC LIMIT ${
+      `SELECT bill.id,bill.id_account,bill.total_amount_order, account.account_name, account.email,account.phone,bill.createAt, bill.confirmAt, bill.paymentAt, bill.cancellationAt, bill.note_cancelation, bill.wait_delivery ,bill.discount,bill.status FROM bill, account WHERE bill.id_account = account.id ${querySearch} ${queryStatus} ORDER BY createAt DESC LIMIT ${
         itemInPage * page - itemInPage
       },${itemInPage}`,
       function (err, data) {
@@ -102,6 +102,10 @@ Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
             if (item.confirmAt) {
               let spA = dayjs(item.confirmAt);
               item.confirmAt = spA.format("YYYY-MM-DD").toString();
+            }
+            if (item.wait_delivery) {
+              let spA = dayjs(item.wait_delivery);
+              item.wait_delivery = spA.format("YYYY-MM-DD").toString();
             }
             if (item.cancellationAt) {
               let clA = dayjs(item.cancellationAt);
@@ -139,6 +143,10 @@ Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
 };
 
 Bill.create = function (formData, result) {
+  if (!formData.total_amount_order) {
+    result({ success: false, data: "Missing required field: total_amount_order" });
+    return;
+  }
   mysql.query("INSERT INTO `bill` SET ?", formData, function (err, data) {
     if (err) {
       result({ success: false, data: err });

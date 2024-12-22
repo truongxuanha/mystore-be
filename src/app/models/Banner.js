@@ -1,45 +1,63 @@
 const mysql = require("../../config/mysql_db");
 
-const Banner = function () {};
+class Banner {
+  static getAll(callback) {
+    const query = "SELECT * FROM banner";
+    mysql.query(query, (err, results) => {
+      if (err) {
+        return callback({ status: false, message: "Failed to fetch banners", error: err });
+      }
+      callback({ status: true, data: results });
+    });
+  }
 
-Banner.getAll = function (result) {
-  mysql.query("SELECT * FROM `banner`", function (err, data) {
-    if (err) {
-      result({ status: false, data: err });
-    } else {
-      result({ status: true, data: data });
-    }
-  });
-};
+  static getById(id, callback) {
+    const query = "SELECT * FROM banner WHERE id = ?";
+    mysql.query(query, [id], (err, results) => {
+      if (err) {
+        return callback({ status: false, message: "Failed to fetch banner", error: err });
+      }
+      if (results.length === 0) {
+        return callback({ status: false, message: "Banner not found" });
+      }
+      callback({ status: true, data: results[0] });
+    });
+  }
+  static create(data, callback) {
+    const query = "INSERT INTO banner (image, path) VALUES (?, ?)";
+    mysql.query(query, [data.image, data.path], (err, results) => {
+      if (err) {
+        return callback({ status: false, message: "Failed to create banner", error: err });
+      }
+      callback({ status: true, message: "Banner created successfully", data: { id: results.insertId, ...data } });
+    });
+  }
 
-Banner.create = function (formData, result) {
-  mysql.query("INSERT INTO `banner` SET ?", formData, function (err, data) {
-    if (err) {
-      result({ status: false, data: err });
-    } else {
-      result({ status: true, data: data });
-    }
-  });
-};
+  static update(id, data, callback) {
+    const query = "UPDATE banner SET image = ?, path = ? WHERE id = ?";
+    mysql.query(query, [data.image, data.path, id], (err, results) => {
+      if (err) {
+        return callback({ status: false, message: "Failed to update banner", error: err });
+      }
+      if (results.affectedRows === 0) {
+        return callback({ status: false, message: "Banner not found" });
+      }
+      callback({ status: true, message: "Banner updated successfully", data });
+    });
+  }
 
-Banner.update = function (id, formData, result) {
-  mysql.query("UPDATE `banner` SET ? WHERE id=?", [formData, id], function (err, data) {
-    if (err) {
-      result({ status: false, data: err });
-    } else {
-      result({ status: true, data: { id: id, ...formData } });
-    }
-  });
-};
-
-Banner.remove = function (id, result) {
-  mysql.query("DELETE FROM `banner` WHERE `id`=?", id, function (err, data) {
-    if (err) {
-      result({ status: false, data: err });
-    } else {
-      result({ status: true, data: "Xóa dữ liệu thành công!" });
-    }
-  });
-};
+  static remove(id, callback) {
+    const query = "DELETE FROM banner WHERE id = ?";
+    mysql.query(query, [id], (err, results) => {
+      if (err) {
+        return callback({ status: false, message: "Failed to delete banner", error: err });
+      }
+      if (results.affectedRows === 0) {
+        return callback({ status: false, message: "Banner not found" });
+      }
+      callback({ status: true, message: "Banner deleted successfully" });
+    });
+  }
+}
 
 module.exports = Banner;

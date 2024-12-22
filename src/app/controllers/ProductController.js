@@ -19,7 +19,8 @@ class ProductController {
     const page = data.page || "";
     const idManu = data.manufacturer || "";
     const itemInPage = data.item || "";
-    Products.getAllByAdmin(query, sort, idManu, page, itemInPage, function (data) {
+    const category = data.category || "";
+    Products.getAllByAdmin(query, sort, idManu, page, itemInPage, category, function (data) {
       res.json(data);
     });
   }

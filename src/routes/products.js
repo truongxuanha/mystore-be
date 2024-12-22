@@ -19,7 +19,7 @@ router.post("/create", upload.single("thumbnail"), middleWareController.verifyTo
 
 router.get("/search", productController.search);
 
-router.get("/random", productController.getRandom);
+router.get("/product-orther", productController.getRandom);
 
 router.get("/:slug", productController.getBySlug);
 

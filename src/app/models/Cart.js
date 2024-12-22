@@ -38,7 +38,7 @@ Cart.create = function (formData, result) {
 
   let query = "";
   formData.map((item) => {
-    query = query + `(NULL, '${item.id_account}', '${item.id_product}', '${item.createAt}', NULL,'${item.quantity}' ),`;
+    query = query + `(NULL, '${item.id_account}', '${item.product_id}', '${item.createAt}', NULL,'${item.quantity}' ),`;
   });
   createCart(query);
 };

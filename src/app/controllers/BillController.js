@@ -40,7 +40,26 @@ class BillController {
     formData.id_account = req.dataToken.id;
 
     Bill.create(formData, function (data) {
-      res.json(data);
+      if (!data.success) {
+        if (data.data === "Missing required field: total_amount_order") {
+          return res.status(400).json({
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: data.data
+            }
+          });
+        }
+        return res.status(500).json({
+          success: false,
+          error: {
+            code: "SERVER_ERROR",
+            message: "An unexpected error occurred",
+            details: data.data
+          }
+        });
+      }
+      res.status(200).json(data);
     });
   }
 

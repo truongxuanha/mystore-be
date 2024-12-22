@@ -4,7 +4,7 @@ const router = express.Router();
 const cartController = require("../app/controllers/CartController");
 const middleWareController = require("../app/controllers/MiddleWareController");
 
-router.get("/get-by-account", middleWareController.verifyToken, cartController.getByAccount);
+router.get("/my-shopping-cart", middleWareController.verifyToken, cartController.getByAccount);
 
 router.post("/create", middleWareController.verifyToken, cartController.create);
 

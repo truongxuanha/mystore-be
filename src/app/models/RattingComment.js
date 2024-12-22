@@ -34,7 +34,9 @@ RattingComment.getByIdProduct = function (id, page, itemInPage, sort, star, resu
               let udA = dayjs(item.updateAt);
               item.updateAt = udA.format("DD-MM-YYYY").toString();
             }
+            item.permission = item.permission === 0 ? "employee" : item.permission === 2 ? "admin" : "customer";
           });
+
           result({
             status: true,
             data: data,
@@ -83,7 +85,9 @@ RattingComment.getByIdProduct = function (id, page, itemInPage, sort, star, resu
             totalScore += item.star * item.count;
           });
           if (!!totalScore && !!totalRatings) {
-            starStats.averageRating = (totalScore / totalRatings)?.toFixed(2);
+            let star = (totalScore / totalRatings).toFixed(2);
+            star = star.replace(/(\.0+|\.00)$/, "");
+            starStats.averageRating = star;
           }
           querySelectAndFilter(totalPage, dataAccount, starStats);
         });
@@ -156,6 +160,7 @@ RattingComment.getAll = function (result) {
     if (err) {
       result({ status: false, data: err });
     } else {
+      console.log(data);
       const newData = data.filter((item) => item.parent_id === null);
       result({ status: true, data: newData });
     }

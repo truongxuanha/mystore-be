@@ -23,7 +23,7 @@ const middleWareController = {
     if (token) {
       try {
         const dataVerify = await _JWT.verify(token);
-        if (dataVerify.data.permission === 0 || dataVerify.data.permission === 2) {
+        if (dataVerify.data.permission === 1 || dataVerify.data.permission === 2) {
           req.dataToken = dataVerify.data;
           next();
         } else {

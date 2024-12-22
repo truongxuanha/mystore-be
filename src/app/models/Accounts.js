@@ -22,9 +22,9 @@ const Account = function (account) {
 Account.getAll = function (query, permission, page, itemInPage, result) {
   let queryPermission = "";
   if (permission === "all") {
-    queryPermission = "(permission = '0' OR permission = '2')";
+    queryPermission = "(permission = '1' OR permission = '2')";
   }
-  if (permission == "0") queryPermission = "permission = '0'";
+  if (permission == "1") queryPermission = "permission = '1'";
   if (permission == "2") queryPermission = "permission = '2'";
 
   let querySearch = "";
@@ -89,7 +89,7 @@ Account.getAllCustomer = function (query, sex, page, itemInPage, result) {
   }
   const querySelect = (totalPage, totalItem) => {
     mysql.query(
-      `SELECT id, account_name, email, phone, full_name, avatar, sex, birthday, permission, status, type, createAt FROM account WHERE ${querySex} ${querySearch} permission = '1' ORDER BY createAt DESC LIMIT ${
+      `SELECT id, account_name, email, phone, full_name, avatar, sex, birthday, permission, status, type, createAt FROM account WHERE ${querySex} ${querySearch} permission = '0' ORDER BY createAt DESC LIMIT ${
         itemInPage * page - itemInPage
       },${itemInPage}`,
       function (err, data) {
@@ -153,7 +153,7 @@ Account.register = function (formData, result) {
       const salt = await bcrypt.genSalt(10);
       const hashed = await bcrypt.hash(formData.password, salt);
       formData.password = hashed;
-      //create new user
+      formData.permission = 0;
       mysql.query("INSERT INTO `account` SET id=REPLACE(UUID(), '-', ''), ? ", formData, function (err, data) {
         if (err) {
           result({ status: false, data: err });
@@ -307,7 +307,7 @@ Account.login = function (formData, result) {
       const user = {
         id: data[0].id,
         account_name: data[0].account_name,
-        permission: data[0].permission,
+        permission: data[0].permission === 1 ? "employee" : data[0].permission === 2 ? "admin" : "customer",
         status: data[0].status,
         avatar: data[0].avatar,
         type: data[0].type
@@ -318,6 +318,13 @@ Account.login = function (formData, result) {
         status: data[0].status,
         type: data[0].type
       };
+      if (data[0].status === 1) {
+        result({
+          status: false,
+          data: "Tài khoản của bạn đã bị khóa!"
+        });
+        return;
+      }
       const token = await _JWT.make(info);
       const refresh = await _JWT.refresh(info);
       result({
