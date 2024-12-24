@@ -1,6 +1,7 @@
 const Manufacturers = require("../models/Manufacturer");
 
 const { createSlug } = require("../../until/slug");
+const { uploadToFirebase } = require("../../until/uploadToFirebase");
 
 class ManufacturerController {
   //[GET] / manufacturer
@@ -39,13 +40,25 @@ class ManufacturerController {
   }
 
   //[POST] / manufacturer/ create
-  create(req, res, next) {
+  async create(req, res, next) {
     const formData = req.body;
     formData.slug = createSlug(req.body.name);
 
-    Manufacturers.create(formData, function (data) {
-      res.json(data);
-    });
+    if (!req.file) {
+      return res.status(400).json({ status: false, message: "No file upload!" });
+    }
+    try {
+      const publicUrl = await uploadToFirebase(req.file, "public/image_description");
+      const newData = {
+        ...formData,
+        img: publicUrl
+      };
+      Manufacturers.create(newData, function (data) {
+        res.json(data);
+      });
+    } catch (error) {
+      res.status(500).json({ status: false, message: error.message });
+    }
   }
 
   //[PUT] / manufacturer/:id/ update

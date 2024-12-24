@@ -35,6 +35,7 @@ ImageDescription.create = function (formData, result) {
     }
   });
 };
+
 ImageDescription.remove = function (id, result) {
   mysql.query("DELETE FROM `img_description` WHERE `id` = ?", id, function (err, data) {
     if (err) {

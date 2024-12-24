@@ -3,6 +3,7 @@ const router = express.Router();
 
 const manufacturerController = require("../app/controllers/ManufacturerController");
 const middleWareController = require("../app/controllers/MiddleWareController");
+const upload = require("../until/upload");
 
 router.get("/", manufacturerController.getAll);
 
@@ -12,7 +13,7 @@ router.get("/:id", manufacturerController.getById);
 
 router.get("/:slug/get_by_slug", manufacturerController.getBySlug);
 
-router.post("/create", middleWareController.verifyTokenAndAdminAuth, manufacturerController.create);
+router.post("/create", upload.single("img"), middleWareController.verifyTokenAndAdminAuth, manufacturerController.create);
 
 router.put("/:id/update", middleWareController.verifyTokenAndAdminAuth, manufacturerController.update);
 

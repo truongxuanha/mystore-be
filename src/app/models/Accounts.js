@@ -153,12 +153,11 @@ Account.register = function (formData, result) {
       const salt = await bcrypt.genSalt(10);
       const hashed = await bcrypt.hash(formData.password, salt);
       formData.password = hashed;
-      formData.permission = 0;
       mysql.query("INSERT INTO `account` SET id=REPLACE(UUID(), '-', ''), ? ", formData, function (err, data) {
         if (err) {
           result({ status: false, data: err });
         } else {
-          result({ status: true, data: data });
+          result({ status: true, data: "Đăng ký thành công!" });
         }
       });
     } catch (error) {
