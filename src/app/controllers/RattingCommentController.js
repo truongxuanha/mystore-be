@@ -9,7 +9,7 @@ class RattingCommentController {
     const itemInPage = data.item;
     const sort = data.sort;
     const star = data.star;
-
+  
     RattingComment.getByIdProduct(id, page, itemInPage, sort, star, function (data) {
       res.json(data);
     });
@@ -26,7 +26,6 @@ class RattingCommentController {
   create(req, res, next) {
     const formData = req.body;
     formData.id_account = req.dataToken.id;
-
     RattingComment.create(formData, function (data) {
       res.json(data);
     });

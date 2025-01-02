@@ -40,4 +40,8 @@ router.post("/forgot-password", accountController.forgotPassword);
 
 router.post("/reset-password", middleWareController.verifyTokenForgotPass, accountController.resetPassword);
 
+router.post("/send-otp", accountController.sendOTP);
+
+router.post("/verify-otp", middleWareController.verifyOTPMiddleware, accountController.verifyOTP);
+
 module.exports = router;

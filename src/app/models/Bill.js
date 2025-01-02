@@ -70,80 +70,89 @@ Bill.getByStatus = function (status, id, result) {
 };
 
 Bill.getAllByAdmin = function (query, status, page, itemInPage, result) {
+  const offset = (page - 1) * itemInPage;
+
   let querySearch = "";
-  if (query !== "") {
+  if (query && query.trim() !== "") {
     querySearch = `AND (bill.id LIKE '%${query}%' OR account.account_name LIKE '%${query}%')`;
   }
+
   let queryStatus = "";
-  if (status !== "") {
+  if (status && status !== "all") {
     queryStatus = `AND bill.status = '${status}'`;
   }
-  if (status === "all") {
-    queryStatus = "";
-  }
-  const querySelect = (totalPage, totalItem) => {
-    mysql.query(
-      `SELECT bill.id,bill.id_account, account.account_name, account.email,account.phone,bill.createAt, bill.confirmAt, bill.paymentAt, bill.cancellationAt, bill.note_cancelation ,bill.discount,bill.status FROM bill, account WHERE bill.id_account = account.id ${querySearch} ${queryStatus} ORDER BY createAt DESC LIMIT ${
-        itemInPage * page - itemInPage
-      },${itemInPage}`,
-      function (err, data) {
-        if (err) {
-          result({ status: false, data: err });
-        } else {
-          data.map((item, index) => {
-            if (item.createAt) {
-              let crtA = dayjs(item.createAt);
-              item.createAt = crtA.format("YYYY-MM-DD").toString();
-            }
-            if (item.paymentAt) {
-              let pmA = dayjs(item.paymentAt);
-              item.paymentAt = pmA.format("YYYY-MM-DD").toString();
-            }
-            if (item.confirmAt) {
-              let spA = dayjs(item.confirmAt);
-              item.confirmAt = spA.format("YYYY-MM-DD").toString();
-            }
-            if (item.cancellationAt) {
-              let clA = dayjs(item.cancellationAt);
-              item.cancellationAt = clA.format("YYYY-MM-DD").toString();
-            }
-            item.key = index;
-          });
-          result({
-            status: true,
-            data: data,
-            totalPage: totalPage,
-            totalItem: totalItem
-          });
-        }
-      }
-    );
-  };
+  const countQuery = `
+    SELECT COUNT(*) AS totalItem
+    FROM bill
+    INNER JOIN account ON bill.id_account = account.id
+    WHERE 1=1 ${querySearch} ${queryStatus}
+  `;
+  const dataQuery = `
+    SELECT 
+      bill.id,
+      bill.id_account,
+      bill.total_amount_order,
+      account.account_name,
+      account.email AS email_user,
+      account.phone,
+      bill.createAt,
+      bill.confirmAt,
+      bill.paymentAt,
+      bill.cancellationAt,
+      bill.note_cancelation,
+      bill.wait_delivery,
+      bill.discount,
+      bill.status
+    FROM bill
+    INNER JOIN account ON bill.id_account = account.id
+    WHERE 1=1 ${querySearch} ${queryStatus}
+    ORDER BY bill.createAt DESC
+    LIMIT ${offset}, ${itemInPage}
+  `;
+  mysql.query(countQuery, function (err, countResult) {
+    if (err) {
+      result({ status: false, data: err });
+      return;
+    }
 
-  mysql.query(
-    `SELECT bill.id,bill.id_account, account.account_name, account.email,account.phone,bill.createAt, bill.confirmAt, bill.paymentAt, bill.cancellationAt, bill.note_cancelation,bill.discount,bill.status FROM bill, account WHERE bill.id_account = account.id ${querySearch} ${queryStatus} ORDER BY createAt DESC`,
-    function (err, data) {
+    const totalItem = countResult[0]?.totalItem || 0;
+    const totalPage = Math.ceil(totalItem / itemInPage);
+
+    mysql.query(dataQuery, function (err, data) {
       if (err) {
         result({ status: false, data: err });
-      } else {
-        let totalPage = data.length / itemInPage;
-        let surplus = data.length % itemInPage;
-        if (surplus > 0) {
-          totalPage += 1;
-        }
-        const totalItem = data.length;
-        querySelect(Math.floor(totalPage), totalItem);
+        return;
       }
-    }
-  );
+      const formattedData = data.map((item, index) => ({
+        ...item,
+        createAt: item.createAt ? dayjs(item.createAt).format("YYYY-MM-DD") : null,
+        confirmAt: item.confirmAt ? dayjs(item.confirmAt).format("YYYY-MM-DD") : null,
+        paymentAt: item.paymentAt ? dayjs(item.paymentAt).format("YYYY-MM-DD") : null,
+        cancellationAt: item.cancellationAt ? dayjs(item.cancellationAt).format("YYYY-MM-DD") : null,
+        wait_delivery: item.wait_delivery ? dayjs(item.wait_delivery).format("YYYY-MM-DD") : null,
+        key: index
+      }));
+
+      result({
+        status: true,
+        data: formattedData,
+        totalPage,
+        totalItem
+      });
+    });
+  });
 };
 
 Bill.create = function (formData, result) {
+  if (!formData.total_amount_order) {
+    result({ success: false, data: "Missing required field: total_amount_order" });
+    return;
+  }
   mysql.query("INSERT INTO `bill` SET ?", formData, function (err, data) {
     if (err) {
-      result({ Success: false, data: err });
+      result({ success: false, data: err });
     } else {
-      result({ Success: true, data: { id: data.insertId, ...formData } });
+      result({ success: true, data: { id: data.insertId, ...formData } });
     }
   });
 };

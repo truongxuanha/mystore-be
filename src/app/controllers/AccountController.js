@@ -2,6 +2,8 @@ const Account = require("../models/Accounts");
 const multer = require("multer");
 const mailer = require("../../until/mailer");
 const _JWT = require("../../until/_JWT");
+const crypto = require("crypto");
+
 require("dotenv/config");
 
 class AccountController {
@@ -237,6 +239,7 @@ class AccountController {
       }
     });
   }
+
   //[POST] /account/reset-password
   resetPassword(req, res) {
     const formData = req.body;
@@ -261,6 +264,70 @@ class AccountController {
 
     Account.remove(id, function (data) {
       res.json(data);
+    });
+  }
+  sendOTP(req, res) {
+    const { email } = req.body;
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    Account.findValidOTP(email, otp, (err, existingOTP) => {
+      if (err) {
+        return res.status(500).json({ status: false, message: "Lỗi khi kiểm tra OTP." });
+      }
+
+      if (existingOTP) {
+        return res.status(400).json({ status: false, message: "Mã OTP chưa hết hạn. Vui lòng thử lại sau." });
+      }
+      Account.updateOTP(email, otp, expiresAt, (err, result) => {
+        if (err) {
+          return res.status(500).json({ status: false, message: "Lỗi khi cập nhật OTP vào cơ sở dữ liệu." });
+        }
+        if (!email) {
+          return res.status(401).json({ status: false, message: "Email không hợp lệ!!" });
+        }
+        mailer.sentMail(
+          email,
+          "Mã OTP xác thực",
+          `<h5>Xin chào</h5>
+          <p>Mã OTP của bạn là: <strong>${otp}</strong></p>
+          <p>Mã này sẽ hết hạn sau 10 phút.</p>`
+        );
+        res.json({
+          status: true,
+          email,
+          message: "Một mã OTP đã được gửi đến email của bạn!"
+        });
+      });
+    });
+  }
+
+  verifyOTP(req, res) {
+    const { otp, email } = req.body;
+    Account.findValidOTP(email, otp, async (err, validOTP) => {
+      if (err) {
+        return res.status(500).json({ status: false, message: "Lỗi khi kiểm tra OTP." });
+      }
+
+      if (!validOTP) {
+        return res.status(400).json({ status: false, message: "Mã OTP không hợp lệ hoặc đã hết hạn." });
+      }
+      Account.clearOTP(email, async (err, result) => {
+        if (err) {
+          return res.status(500).json({ status: false, message: "Lỗi khi xóa OTP." });
+        }
+        try {
+          const token = await _JWT.makeMailer(email);
+          res.json({
+            status: true,
+            message: "OTP hợp lệ. Bạn có thể tiếp tục.",
+            can_be_reset: true,
+            email: email,
+            token: token
+          });
+        } catch (error) {
+          return res.status(500).json({ status: false, message: "Lỗi khi tạo token." });
+        }
+      });
     });
   }
 }

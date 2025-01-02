@@ -5,7 +5,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const methodOverride = require("method-override");
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 
 const route = require("./routes");
 

@@ -3,18 +3,20 @@ const productRouter = require("./products");
 const accountRouter = require("./account");
 const addressRouter = require("./address");
 const imgDescriptionRouter = require("./imageDescription");
-const propertiesRouter = require("./properties");
 const billRouter = require("./bill");
 const detailBillRouter = require("./detailBill");
 const rattingCommentRouter = require("./rattingcomment");
 const commentRouter = require("./comment");
 const cartRouter = require("./cart");
 const bannerRouter = require("./banner");
-const newsCategoryRouter = require("./newsCategory");
-const newsRouter = require("./news");
 const revenueRouter = require("./revenue");
 const salePopupRouter = require("./salePopup");
+<<<<<<< HEAD
+const category = require("./productCategory");
+const payment = require("./payment");
+=======
 
+>>>>>>> main
 function route(app) {
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -27,17 +29,16 @@ function route(app) {
   app.use("/v1/account", accountRouter);
   app.use("/v1/address", addressRouter);
   app.use("/v1/image_description", imgDescriptionRouter);
-  app.use("/v1/properties", propertiesRouter);
   app.use("/v1/bill", billRouter);
   app.use("/v1/detail-bill", detailBillRouter);
   app.use("/v1/ratting-comment", rattingCommentRouter);
   app.use("/v1/comment", commentRouter);
   app.use("/v1/cart", cartRouter);
   app.use("/v1/banner", bannerRouter);
-  app.use("/v1/news-category", newsCategoryRouter);
-  app.use("/v1/news", newsRouter);
   app.use("/v1/revenue", revenueRouter);
   app.use("/v1/salepopup", salePopupRouter);
+  app.use("/v1/category-product", category);
+  app.use("/v1/payment", payment);
 }
 
 module.exports = route;

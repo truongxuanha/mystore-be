@@ -1,7 +1,7 @@
 const Revenue = require("../models/Revenue");
 const dayjs = require("dayjs");
 
-function getMonthRange(month, year) {
+const getMonthRange = (month, year) => {
   const date = dayjs(`${year}-${month}-01`);
   const currentYear = dayjs().year();
   const currentMonth = dayjs().month() + 1;
@@ -20,7 +20,7 @@ function getMonthRange(month, year) {
     startOfMonth: startOfMonth.format("YYYY-MM-DD"),
     endOfMonth: endOfMonth.format("YYYY-MM-DD")
   };
-}
+};
 
 class RevenueController {
   getRevenueMonth(req, res, next) {
@@ -41,6 +41,23 @@ class RevenueController {
 
     Revenue.getRevenueMonth(startOfMonth, endOfMonth, function (data) {
       res.json(data);
+    });
+  }
+  getStatistical(req, res, next) {
+    Revenue.getStatistical(function (data) {
+      res.json(data);
+    });
+  }
+  getRecentOrders(req, res, next) {
+    Revenue.getRecentOrders(function (data) {
+      if (!data.status) {
+        return res.status(500).json({ error: "Failed to fetch recent orders", details: data.data });
+      }
+      res.json({
+        status: true,
+        message: "Recent orders fetched successfully",
+        data: data.data
+      });
     });
   }
 }

@@ -10,7 +10,7 @@ router.get("/:id/get-by-account", middleWareController.verifyTokenAndAdminAuth, 
 
 router.get("/:id/get-by-bill", middleWareController.verifyTokenAndAdminAuth, addressController.getByBill);
 
-router.get("/get-by-account", middleWareController.verifyToken, addressController.getByIdAccount);
+router.get("/address-by-user", middleWareController.verifyToken, addressController.getByIdAccount);
 
 router.get("/:id/get-by-id", middleWareController.verifyToken, addressController.getById);
 
