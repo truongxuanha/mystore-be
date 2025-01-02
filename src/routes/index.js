@@ -11,12 +11,8 @@ const cartRouter = require("./cart");
 const bannerRouter = require("./banner");
 const revenueRouter = require("./revenue");
 const salePopupRouter = require("./salePopup");
-<<<<<<< HEAD
 const category = require("./productCategory");
 const payment = require("./payment");
-=======
-
->>>>>>> main
 function route(app) {
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
