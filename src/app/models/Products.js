@@ -620,8 +620,20 @@ Products.create = async function (formData, result) {
   mysql.query("INSERT INTO `products` SET ?", formData, function (err, data) {
     if (err) {
       result({ status: false, data: err });
+      return;
+    }
+    const productId = data.insertId;
+    if (formData.thumbnail) {
+      const imgData = { id_product: productId, path_name: formData.thumbnail };
+      mysql.query("INSERT INTO `img_description` SET ?", imgData, function (imgErr) {
+        if (imgErr) {
+          result({ status: false, data: imgErr });
+          return;
+        }
+        result({ status: true, data: { id: productId, ...formData } });
+      });
     } else {
-      result({ status: true, data: { id: data.insertId, ...formData } });
+      result({ status: true, data: { id: productId, ...formData } });
     }
   });
 };

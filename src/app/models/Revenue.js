@@ -39,7 +39,10 @@ Revenue.getStatistical = (result) => {
     SELECT 
       (SELECT COUNT(*) FROM products) AS total_products,
       (SELECT COUNT(*) FROM bill WHERE status = 0) AS total_pending_orders,
-      (SELECT COUNT(*) FROM account WHERE account.permission = 1) AS total_customers,
+      (SELECT COUNT(*) FROM bill WHERE status = 1) AS total_awaiting_pickup,
+      (SELECT COUNT(*) FROM bill WHERE status = 2) AS total_in_delivery,
+      (SELECT COUNT(*) FROM bill WHERE status = 3) AS total_delivered,
+      (SELECT COUNT(*) FROM account WHERE account.permission = 0) AS total_customers,
       (SELECT COALESCE(SUM(total_amount_order), 0) 
        FROM bill 
        WHERE MONTH(confirmAt) = MONTH(CURRENT_DATE()) AND YEAR(confirmAt) = YEAR(CURRENT_DATE())
@@ -50,6 +53,8 @@ Revenue.getStatistical = (result) => {
       result({ status: false, data: err });
       return;
     }
+    console.log(data);
+
     result({ status: true, data: data[0] });
   });
 };

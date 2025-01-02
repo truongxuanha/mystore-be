@@ -79,35 +79,26 @@ class BillController {
     let formData = req.body;
     const email = req.body.email;
     delete formData["email"];
-
     Bill.update(id, formData, function (data) {
-      if (data.success === true) {
-        if (formData.status == 1) {
-          const sentMail = async () => {
-            mailer.sentMail(
-              email,
-              "Order Status",
-              `<h5>Xin chào</h5><p>Đơn hàng ${id} của bạn đã được xác nhận lúc ${formData.confirmAt}</p>
+      if (data.success === true && email) {
+        const statusOrder = {
+          1: " đã được xác nhận ",
+          2: " shipper đã lấy hàng ",
+          3: " bắt đầu giao ",
+          4: " được giao thành công "
+        };
+
+        const sentMail = async () => {
+          mailer.sentMail(
+            email,
+            "Order Status",
+            `<h5>Xin chào</h5><p>Đơn hàng ${id} của bạn ${statusOrder[formData.status]} lúc ${formData.confirmAt}</p>
                       <p>Trân trọng!</p>
                       <p>Truy cập: ${process.env.APP_URL}/account Để theo dõi đơn hàng của bạn</p>
                       `
-            );
-          };
-          sentMail();
-        }
-        if (formData.status == 2) {
-          const sentMail = async () => {
-            mailer.sentMail(
-              email,
-              "Order Status",
-              `<h5>Xin chào</h5><p>Đơn hàng ${id} của bạn đã giao thành công lúc ${formData.paymentAt}</p>
-                      <p>Cảm ơn quý khách đã tin tưởng và ủng hộ sản phẩm của chúng tôi, trân trọng!</p>
-                      <p>Truy cập: ${process.env.APP_URL}/account Để theo dõi đơn hàng của bạn</p>
-                      `
-            );
-          };
-          sentMail();
-        }
+          );
+        };
+        sentMail(formData);
       }
       res.json(data);
     });

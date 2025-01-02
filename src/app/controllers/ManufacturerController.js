@@ -62,15 +62,29 @@ class ManufacturerController {
   }
 
   //[PUT] / manufacturer/:id/ update
-  update(req, res, next) {
+  async update(req, res, next) {
     const id = req.params.id;
 
     const formData = req.body;
     formData.slug = createSlug(req.body.name);
-
-    Manufacturers.update(id, formData, function (data) {
-      res.json(data);
-    });
+    if (req.file) {
+      try {
+        const publicUrl = await uploadToFirebase(req.file, "public/image_description");
+        const newData = {
+          ...formData,
+          img: publicUrl
+        };
+        Manufacturers.create(newData, function (data) {
+          res.json(data);
+        });
+      } catch (error) {
+        res.status(500).json({ status: false, message: error.message });
+      }
+    } else {
+      Manufacturers.update(id, formData, function (data) {
+        res.json(data);
+      });
+    }
   }
 
   //[DELETE] / manufacturer/ id / remove

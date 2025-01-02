@@ -282,6 +282,9 @@ class AccountController {
         if (err) {
           return res.status(500).json({ status: false, message: "Lỗi khi cập nhật OTP vào cơ sở dữ liệu." });
         }
+        if (!email) {
+          return res.status(401).json({ status: false, message: "Email không hợp lệ!!" });
+        }
         mailer.sentMail(
           email,
           "Mã OTP xác thực",

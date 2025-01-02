@@ -12,6 +12,7 @@ const bannerRouter = require("./banner");
 const revenueRouter = require("./revenue");
 const salePopupRouter = require("./salePopup");
 const category = require("./productCategory");
+const payment = require("./payment");
 function route(app) {
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -33,6 +34,7 @@ function route(app) {
   app.use("/v1/revenue", revenueRouter);
   app.use("/v1/salepopup", salePopupRouter);
   app.use("/v1/category-product", category);
+  app.use("/v1/payment", payment);
 }
 
 module.exports = route;
